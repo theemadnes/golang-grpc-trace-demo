@@ -20,7 +20,7 @@ type server struct {
 	pb.UnimplementedPingPongServer
 }
 
-func (s *server) PongReply(ctx context.Context, in *pb.Ping) (*pb.Pong, error) {
+func (s *server) GetPong(ctx context.Context, in *pb.Ping) (*pb.Pong, error) {
 	log.Printf("Received ping: %v", in.Ping)
 	currentTime := time.Now()
 	return &pb.Pong{Pong: "Pong @ " + currentTime.String()}, nil
