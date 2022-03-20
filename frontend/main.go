@@ -6,9 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	pb "github.com/theemadnes/golang-grpc-trace-demo/pingpong"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -23,7 +28,17 @@ func main() {
 
 	helloHandler := func(w http.ResponseWriter, req *http.Request) {
 		//io.WriteString(w, "Hello, world!\n")
-		conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		ctx := context.Background()
+		projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+		exporter, err := texporter.New(texporter.WithProjectID(projectID))
+		if err != nil {
+			log.Fatalf("texporter.NewExporter: %v", err)
+		}
+		tp := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter))
+		defer tp.ForceFlush(ctx) // flushes any pending spans
+		otel.SetTracerProvider(tp)
+		conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()))
 		if err != nil {
 			log.Fatalf("did not connect: %v", err)
 		}

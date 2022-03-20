@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "github.com/theemadnes/golang-grpc-trace-demo";
+
+service BingBong {
+    rpc GetBong(Bing) returns (Bong) {}
+}
+
+message Bing {
+    string bing = 1;
+}
+
+message Bong {
+    string bong = 1;
+}
