@@ -19,7 +19,8 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	addr    = flag.String("addr", "localhost:50051", "the address to connect to")
+	service = "frontend"
 )
 
 func main() {
@@ -48,8 +49,7 @@ func main() {
 		// Contact the server and print out its response.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		currentTime := time.Now()
-		r, err := c.GetPong(ctx, &pb.Ping{Ping: "Ping @ " + currentTime.String()})
+		r, err := c.GetPong(ctx, &pb.Ping{Ping: "Ping @ " + time.Now().String()})
 		if err != nil {
 			log.Fatalf("could not ping: %v", err)
 		}
